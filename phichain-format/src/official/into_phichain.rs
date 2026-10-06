@@ -29,7 +29,14 @@ pub fn official_to_phichain(
         ));
     }
 
-    let to_point = |point: crate::official::schema::OfficialPoint| NoisePoint {
+    // Official block positions use a top-left origin (Y points down), while the editor uses
+    // bottom-left percentages (Y points up). Scale values are vectors, not positions, and must
+    // not be flipped.
+    let to_position = |point: crate::official::schema::OfficialPoint| NoisePoint {
+        x: point.x,
+        y: 1.0 - point.y,
+    };
+    let to_scale = |point: crate::official::schema::OfficialPoint| NoisePoint {
         x: point.x,
         y: point.y,
     };
@@ -38,8 +45,8 @@ pub fn official_to_phichain(
             .block_areas
             .iter()
             .map(|area| NoiseArea {
-                top_right_percentage: to_point(area.top_right_percentage),
-                bottom_left_percentage: to_point(area.bottom_left_percentage),
+                top_right_percentage: to_position(area.top_right_percentage),
+                bottom_left_percentage: to_position(area.bottom_left_percentage),
                 appear_beat: BpmList::single(official.lines[0].bpm).beat_at(area.appear_time),
                 enable_beat: BpmList::single(official.lines[0].bpm).beat_at(area.enable_time),
                 disable_beat: BpmList::single(official.lines[0].bpm).beat_at(area.disable_time),
@@ -50,7 +57,7 @@ pub fn official_to_phichain(
                     .iter()
                     .map(|event| NoiseMoveEvent {
                         beat: BpmList::single(official.lines[0].bpm).beat_at(event.time),
-                        end_position: to_point(event.end_position),
+                        end_position: to_position(event.end_position),
                         ease_type_x: event.ease_type_x,
                         ease_type_y: event.ease_type_y,
                     })
@@ -60,8 +67,8 @@ pub fn official_to_phichain(
                     .iter()
                     .map(|event| NoiseScaleEvent {
                         beat: BpmList::single(official.lines[0].bpm).beat_at(event.time),
-                        anchor: to_point(event.anchor),
-                        scale: to_point(event.scale),
+                        anchor: to_position(event.anchor),
+                        scale: to_scale(event.scale),
                         ease_type_x: event.ease_type_x,
                         ease_type_y: event.ease_type_y,
                     })
@@ -71,8 +78,8 @@ pub fn official_to_phichain(
                     .iter()
                     .map(|event| NoiseRotateEvent {
                         beat: BpmList::single(official.lines[0].bpm).beat_at(event.time),
-                        anchor: to_point(event.anchor),
-                        rotation: event.rotation,
+                        anchor: to_position(event.anchor),
+                        rotation: -event.rotation,
                         ease_type: event.ease_type,
                     })
                     .collect(),

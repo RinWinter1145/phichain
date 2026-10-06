@@ -179,7 +179,8 @@ fn update_noise_composite(
     };
     let pixel_count = (MASK_WIDTH * MASK_HEIGHT) as usize;
     let mut normal = vec![0_u8; pixel_count];
-    let mut subtract = vec![0_u8; pixel_count];
+    let mut subtract_phase = vec![0_u8; pixel_count];
+    let mut subtract_odd = vec![false; pixel_count];
 
     for area in &areas {
         if !area.is_visible(chart_time.0, &bpm_list) {
@@ -228,7 +229,8 @@ fn update_noise_composite(
                 if rect.contains(point) {
                     let index = y as usize * MASK_WIDTH as usize + x as usize;
                     if area.is_subtract {
-                        subtract[index] ^= phase;
+                        subtract_odd[index] = !subtract_odd[index];
+                        subtract_phase[index] |= phase;
                     } else {
                         normal[index] |= phase;
                     }
@@ -240,7 +242,7 @@ fn update_noise_composite(
     if let Some(image) = images.get_mut(&composite.mask) {
         let mut data = vec![0_u8; pixel_count * 4];
         for index in 0..pixel_count {
-            let phases = normal[index] ^ subtract[index];
+            let phases = compose_phase(normal[index], subtract_odd[index], subtract_phase[index]);
             data[index * 4] = if phases & 1 != 0 { 255 } else { 0 };
             data[index * 4 + 1] = if phases & 2 != 0 { 255 } else { 0 };
             data[index * 4 + 2] = if phases & 4 != 0 { 255 } else { 0 };
@@ -253,5 +255,29 @@ fn update_noise_composite(
     }
     if let Ok(mut transform) = transforms.get_mut(composite.entity) {
         transform.scale = Vec3::new(viewport.0.width(), viewport.0.height(), 1.0);
+    }
+}
+
+fn compose_phase(normal_phase: u8, subtract_odd: bool, subtract_phase: u8) -> u8 {
+    let has_normal = normal_phase != 0;
+    if has_normal == subtract_odd {
+        0
+    } else if has_normal {
+        normal_phase
+    } else {
+        subtract_phase
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::compose_phase;
+
+    #[test]
+    fn subtract_parity_is_independent_of_visual_phase() {
+        assert_eq!(compose_phase(1, true, 4), 0);
+        assert_eq!(compose_phase(1, false, 4), 1);
+        assert_eq!(compose_phase(0, true, 4), 4);
+        assert_eq!(compose_phase(0, false, 4), 0);
     }
 }

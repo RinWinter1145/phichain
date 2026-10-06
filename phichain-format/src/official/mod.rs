@@ -128,9 +128,13 @@ mod tests {
         assert_eq!(area.appear_beat, beat!(2));
         assert_eq!(area.enable_beat, beat!(3));
         assert_eq!(area.move_events[0].beat, beat!(4));
+        assert!((area.top_right_percentage.y - 0.2).abs() < 1e-5);
+        assert!((area.bottom_left_percentage.y - 0.8).abs() < 1e-5);
+        assert!((area.move_events[0].end_position.y - 0.6).abs() < 1e-5);
         assert_eq!(area.move_events[0].ease_type_x, 3);
+        assert!((area.scale_events[0].scale.y - 0.8).abs() < 1e-5);
         assert_eq!(area.scale_events[0].ease_type_y, 6);
-        assert_eq!(area.rotate_events[0].rotation, 45.0);
+        assert_eq!(area.rotate_events[0].rotation, -45.0);
 
         let output =
             OfficialChart::from_phichain(phichain, &OfficialOutputOptions::default()).unwrap();
@@ -140,5 +144,6 @@ mod tests {
         assert!((area["moveEvents"][0]["endPosition"]["x"].as_f64().unwrap() - 0.6).abs() < 1e-5);
         assert_eq!(area["scaleEvents"][0]["easeTypeY"], 6);
         assert_eq!(area["rotateEvents"][0]["easeType"], 7);
+        assert_eq!(area["rotateEvents"][0]["rotation"], 45.0);
     }
 }

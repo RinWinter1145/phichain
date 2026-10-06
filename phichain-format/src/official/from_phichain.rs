@@ -40,13 +40,17 @@ pub fn phichain_to_official(
             .0
             .iter()
             .map(|area| {
-                let point = |point: phichain_chart::noise::NoisePoint| OfficialPoint {
+                let position = |point: phichain_chart::noise::NoisePoint| OfficialPoint {
+                    x: point.x,
+                    y: 1.0 - point.y,
+                };
+                let scale = |point: phichain_chart::noise::NoisePoint| OfficialPoint {
                     x: point.x,
                     y: point.y,
                 };
                 OfficialBlockArea {
-                    top_right_percentage: point(area.top_right_percentage),
-                    bottom_left_percentage: point(area.bottom_left_percentage),
+                    top_right_percentage: position(area.top_right_percentage),
+                    bottom_left_percentage: position(area.bottom_left_percentage),
                     appear_time: phichain.bpm_list.time_at(area.appear_beat),
                     enable_time: phichain.bpm_list.time_at(area.enable_beat),
                     disable_time: phichain.bpm_list.time_at(area.disable_beat),
@@ -57,7 +61,7 @@ pub fn phichain_to_official(
                         .iter()
                         .map(|event| OfficialBlockMoveEvent {
                             time: phichain.bpm_list.time_at(event.beat),
-                            end_position: point(event.end_position),
+                            end_position: position(event.end_position),
                             ease_type_x: event.ease_type_x,
                             ease_type_y: event.ease_type_y,
                         })
@@ -67,8 +71,8 @@ pub fn phichain_to_official(
                         .iter()
                         .map(|event| OfficialBlockScaleEvent {
                             time: phichain.bpm_list.time_at(event.beat),
-                            anchor: point(event.anchor),
-                            scale: point(event.scale),
+                            anchor: position(event.anchor),
+                            scale: scale(event.scale),
                             ease_type_x: event.ease_type_x,
                             ease_type_y: event.ease_type_y,
                         })
@@ -78,8 +82,8 @@ pub fn phichain_to_official(
                         .iter()
                         .map(|event| OfficialBlockRotateEvent {
                             time: phichain.bpm_list.time_at(event.beat),
-                            anchor: point(event.anchor),
-                            rotation: event.rotation,
+                            anchor: position(event.anchor),
+                            rotation: -event.rotation,
                             ease_type: event.ease_type,
                         })
                         .collect(),
