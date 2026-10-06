@@ -202,7 +202,7 @@ impl Timeline for NoteTimeline {
 
             if let NoteKind::Hold { .. } = note.kind {
                 if let Some(drag) =
-                    BeatRangeDragZone::new(rect, "hold-drag", &ctx, &mut *note).show(ui)
+                    BeatRangeDragZone::new(rect, ("hold-drag", entity), &ctx, &mut *note).show(ui)
                 {
                     event_writer.write(DoCommand(EditorCommand::EditNote(EditNote::new(
                         entity, drag.from, drag.to,

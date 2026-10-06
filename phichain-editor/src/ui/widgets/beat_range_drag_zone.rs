@@ -2,6 +2,7 @@ use crate::timeline::TimelineContext;
 use egui::{Id, Rangef, Rect, Sense, Ui};
 use phichain_chart::beat::Beat;
 use phichain_chart::event::LineEvent;
+use phichain_chart::noise::NoiseArea;
 use phichain_chart::note::Note;
 
 /// A trait for types that have a beat range on timeline.
@@ -53,13 +54,35 @@ impl TimelineBeatRange for LineEvent {
     }
 }
 
+impl TimelineBeatRange for NoiseArea {
+    fn start_beat_value(&self) -> f32 {
+        self.appear_beat.value()
+    }
+
+    fn end_beat_value(&self) -> f32 {
+        self.disappear_beat.value()
+    }
+
+    fn set_start_beat(&mut self, beat: Beat) {
+        let delta = beat - self.appear_beat;
+        self.appear_beat = beat;
+        self.enable_beat = (self.enable_beat + delta).min(self.disable_beat);
+    }
+
+    fn set_end_beat(&mut self, beat: Beat) {
+        let delta = beat - self.disappear_beat;
+        self.disappear_beat = beat;
+        self.disable_beat = (self.disable_beat + delta).max(self.enable_beat);
+    }
+}
+
 /// A drag zone for editing beat ranges (start/end) with precise accumulation.
 ///
 /// This widget handles the common drag interaction pattern used in timeline editing,
 /// where users drag the top or bottom edge of a rect to adjust beat positions.
 pub struct BeatRangeDragZone<'a, T: TimelineBeatRange + Clone + PartialEq + Send + Sync + 'static> {
     rect: Rect,
-    id: &'static str,
+    id: Id,
     ctx: &'a TimelineContext<'a>,
     data: &'a mut T,
 }
@@ -74,13 +97,13 @@ impl<'a, T: TimelineBeatRange + Clone + PartialEq + Send + Sync + 'static>
 {
     pub fn new(
         rect: Rect,
-        id: &'static str,
+        id: impl std::hash::Hash,
         ctx: &'a TimelineContext<'a>,
         data: &'a mut T,
     ) -> Self {
         Self {
             rect,
-            id,
+            id: Id::new(id),
             ctx,
             data,
         }
@@ -109,8 +132,8 @@ impl<'a, T: TimelineBeatRange + Clone + PartialEq + Send + Sync + 'static>
             .allocate_rect(drag_zone, Sense::drag())
             .on_hover_and_drag_cursor(egui::CursorIcon::ResizeVertical);
 
-        let precise_id = Id::new(self.id).with("precise").with(start);
-        let snapshot_id = Id::new(self.id).with("snapshot");
+        let precise_id = self.id.with("precise").with(start);
+        let snapshot_id = self.id.with("snapshot");
 
         if response.drag_started() {
             ui.data_mut(|data| data.insert_temp(snapshot_id, self.data.clone()));

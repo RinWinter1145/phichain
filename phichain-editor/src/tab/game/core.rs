@@ -5,7 +5,10 @@ use crate::settings::{EditorSettings, ShowLineAnchorOption};
 use bevy::prelude::*;
 use bevy_persistent::Persistent;
 use bevy_prototype_lyon::prelude::*;
+use phichain_chart::bpm_list::BpmList;
+use phichain_chart::constants::{CANVAS_HEIGHT, CANVAS_WIDTH};
 use phichain_chart::line::Line;
+use phichain_chart::noise::NoiseArea;
 use phichain_chart::note::Note;
 use phichain_chart::project::Project;
 use phichain_game::core::HoldComponent;
@@ -31,7 +34,44 @@ impl Plugin for CoreGamePlugin {
                     .run_if(project_loaded()),
             )
             .add_systems(Update, update_anchor_marker_system.run_if(project_loaded()))
+            .add_systems(Update, draw_selected_noise_area.run_if(project_loaded()))
             .add_observer(create_anchor_marker_observer);
+    }
+}
+
+fn draw_selected_noise_area(
+    mut gizmos: Gizmos,
+    areas: Query<&NoiseArea, With<Selected>>,
+    bpm_list: Res<BpmList>,
+    chart_time: Res<phichain_game::ChartTime>,
+    viewport: Res<phichain_game::GameViewport>,
+) {
+    for area in &areas {
+        let rect = area.rect_at(chart_time.0, &bpm_list);
+        let scale = Vec2::new(
+            viewport.0.width() / CANVAS_WIDTH,
+            viewport.0.height() / CANVAS_HEIGHT,
+        );
+        let pose = Isometry2d::new(
+            rect.center * scale,
+            Rot2::radians(rect.rotation_degrees.to_radians()),
+        );
+        gizmos.rect_2d(
+            pose,
+            rect.size * scale,
+            bevy::color::palettes::css::LIMEGREEN,
+        );
+        for corner in [
+            Vec2::new(-0.5, -0.5),
+            Vec2::new(-0.5, 0.5),
+            Vec2::new(0.5, -0.5),
+            Vec2::new(0.5, 0.5),
+        ] {
+            let point = rect.center * scale
+                + (corner * rect.size * scale)
+                    .rotate(Vec2::from_angle(rect.rotation_degrees.to_radians()));
+            gizmos.circle_2d(point, 6.0, bevy::color::palettes::css::LIMEGREEN);
+        }
     }
 }
 

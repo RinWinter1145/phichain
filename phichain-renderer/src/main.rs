@@ -152,6 +152,7 @@ fn setup(
 
     commands.spawn((
         Camera2d,
+        phichain_game::noise_postprocess::NoisePostProcessCamera,
         RenderTarget::Image(target_handle.clone().into()),
         // The target is already sRGB; tonemapping would double-encode.
         Tonemapping::None,

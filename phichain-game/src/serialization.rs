@@ -1,11 +1,13 @@
 use crate::curve_note_track::{CurveNote, CurveNoteTrack};
 use crate::event::Events;
 use crate::line::LineOrder;
+use crate::noise::NoiseAreaOrder;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{ChildOf, Children, Entity, Query, Res, With, Without};
 use phichain_chart::bpm_list::BpmList;
 use phichain_chart::event::LineEvent;
 use phichain_chart::line::Line;
+use phichain_chart::noise::{NoiseArea, NoiseAreas};
 use phichain_chart::note::Note;
 use phichain_chart::offset::Offset;
 use phichain_chart::serialization::{PhichainChart, SerializedLine};
@@ -92,6 +94,7 @@ pub struct SerializeLineParam<'w, 's> {
 pub struct SerializeChartParam<'w, 's> {
     bpm_list: Res<'w, BpmList>,
     offset: Res<'w, Offset>,
+    noise_areas: Query<'w, 's, (&'static NoiseArea, &'static NoiseAreaOrder)>,
     line_query: Query<'w, 's, (Entity, &'static LineOrder), (With<Line>, Without<ChildOf>)>,
 }
 
@@ -104,6 +107,14 @@ pub fn serialize_chart(
 ) -> PhichainChart {
     let mut chart =
         PhichainChart::new(chart_params.offset.0, chart_params.bpm_list.clone(), vec![]);
+    let mut noise_areas = chart_params.noise_areas.iter().collect::<Vec<_>>();
+    noise_areas.sort_by_key(|(_, order)| order.0);
+    chart.noise_areas = NoiseAreas(
+        noise_areas
+            .into_iter()
+            .map(|(area, _)| area.clone())
+            .collect(),
+    );
 
     let lines = chart_params
         .line_query

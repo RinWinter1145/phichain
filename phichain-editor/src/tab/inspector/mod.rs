@@ -1,7 +1,9 @@
 mod curve_note_track;
 mod line;
 mod multiple_events;
+mod multiple_noise_areas;
 mod multiple_notes;
+mod noise_area;
 mod single_event;
 mod single_note;
 
@@ -9,13 +11,16 @@ use crate::selection::Selected;
 use crate::tab::inspector::curve_note_track::curve_note_track_inspector;
 use crate::tab::inspector::line::line_inspector;
 use crate::tab::inspector::multiple_events::multiple_events_inspector;
+use crate::tab::inspector::multiple_noise_areas::multiple_noise_areas_inspector;
 use crate::tab::inspector::multiple_notes::multiple_notes_inspector;
+use crate::tab::inspector::noise_area::noise_area_inspector;
 use crate::tab::inspector::single_event::single_event_inspector;
 use crate::tab::inspector::single_note::single_note_inspector;
 use bevy::ecs::system::{RegisteredSystemError, SystemId};
 use bevy::prelude::*;
 use egui::{Ui, UiBuilder};
 use phichain_chart::event::LineEvent;
+use phichain_chart::noise::NoiseArea;
 use phichain_chart::note::Note;
 use phichain_game::curve_note_track::CurveNoteTrack;
 
@@ -57,6 +62,11 @@ pub struct InspectorPlugin;
 impl Plugin for InspectorPlugin {
     fn build(&self, app: &mut App) {
         app.add_inspector(single_note_inspector, single_selected::<Note>)
+            .add_inspector(noise_area_inspector, single_selected::<NoiseArea>)
+            .add_inspector(
+                multiple_noise_areas_inspector,
+                multiple_selected::<NoiseArea>,
+            )
             .add_inspector(multiple_notes_inspector, multiple_selected::<Note>)
             .add_inspector(
                 curve_note_track_inspector,

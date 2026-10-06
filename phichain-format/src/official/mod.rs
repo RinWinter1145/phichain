@@ -91,3 +91,54 @@ impl ChartFormat for OfficialChart {
         self
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use phichain_chart::beat;
+
+    #[test]
+    fn block_area_round_trips_with_official_field_names() {
+        let json = r#"{
+          "formatVersion": 3,
+          "offset": 0.0,
+          "judgeLineList": [{
+            "bpm": 120.0,
+            "judgeLineMoveEvents": [], "judgeLineRotateEvents": [],
+            "judgeLineDisappearEvents": [], "speedEvents": [],
+            "notesAbove": [], "notesBelow": []
+          }],
+          "blockAreaList": [{
+            "topRightPercentage": {"x": 0.9, "y": 0.8},
+            "bottomLeftPercentage": {"x": 0.1, "y": 0.2},
+            "appearTime": 1.0, "enableTime": 1.5,
+            "disableTime": 3.0, "disappearTime": 3.5,
+            "isSubtract": true,
+            "moveEvents": [{"time": 2.0, "endPosition": {"x": 0.6, "y": 0.4}, "easeTypeX": 3, "easeTypeY": 4}],
+            "scaleEvents": [{"time": 2.25, "anchor": {"x": 0.5, "y": 0.5}, "scale": {"x": 1.2, "y": 0.8}, "easeTypeX": 5, "easeTypeY": 6}],
+            "rotateEvents": [{"time": 2.5, "anchor": {"x": 0.5, "y": 0.5}, "rotation": 45.0, "easeType": 7}]
+          }]
+        }"#;
+        let official: OfficialChart = serde_json::from_str(json).unwrap();
+        let phichain = official
+            .to_phichain(&OfficialInputOptions::default())
+            .unwrap();
+        let area = &phichain.noise_areas.0[0];
+        assert!(area.is_subtract);
+        assert_eq!(area.appear_beat, beat!(2));
+        assert_eq!(area.enable_beat, beat!(3));
+        assert_eq!(area.move_events[0].beat, beat!(4));
+        assert_eq!(area.move_events[0].ease_type_x, 3);
+        assert_eq!(area.scale_events[0].ease_type_y, 6);
+        assert_eq!(area.rotate_events[0].rotation, 45.0);
+
+        let output =
+            OfficialChart::from_phichain(phichain, &OfficialOutputOptions::default()).unwrap();
+        let value = serde_json::to_value(output).unwrap();
+        let area = &value["blockAreaList"][0];
+        assert_eq!(area["isSubtract"], true);
+        assert!((area["moveEvents"][0]["endPosition"]["x"].as_f64().unwrap() - 0.6).abs() < 1e-5);
+        assert_eq!(area["scaleEvents"][0]["easeTypeY"], 6);
+        assert_eq!(area["rotateEvents"][0]["easeType"], 7);
+    }
+}

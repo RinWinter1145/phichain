@@ -256,7 +256,7 @@ impl Timeline for EventTimeline {
                 );
 
                 if let Some(drag) =
-                    BeatRangeDragZone::new(rect, "event-drag", &ctx, &mut *event).show(ui)
+                    BeatRangeDragZone::new(rect, ("event-drag", entity), &ctx, &mut *event).show(ui)
                 {
                     event_writer.write(DoCommand(EditorCommand::EditEvent(EditEvent::new(
                         entity, drag.from, drag.to,

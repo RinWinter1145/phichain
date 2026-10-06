@@ -37,14 +37,61 @@ menu_bar:
         cancel: Cancel
 
 tab:
+  noise_areas:
+    title: Noise Domains
+    normal: Normal
+    subtract: Subtract
+    is_subtract: Subtract domain
+    top_right: Top-right percentage
+    bottom_left: Bottom-left percentage
+    appear: Appear beat
+    enable: Enable beat
+    disable: Disable beat
+    disappear: Disappear beat
+    move_events: Move events
+    scale_events: Scale events
+    rotate_events: Rotate events
+    beat: Beat
+    end_position: End position
+    anchor: Anchor
+    scale: Scale
+    rotation: Rotation
+    add_event: Add event
+    remove_event: Remove event
+    new: New noise domain
+    remove: Remove noise domain
   game:
     title: Preview
+    draw_noise_area: Draw noise domain
+    auto_key: Auto key
+    subtract_domain: Subtract
   timeline:
     title: Timeline
     event:
       jump_to_event: Jump to this event
   inspector:
     title: Inspector
+    noise_area:
+      title: Noise domain
+      hint: Drag it in the preview; adjust all four phases on the timeline.
+      presets: Composition presets
+      full: Full screen
+      left: Left half
+      right: Right half
+      top: Top half
+      bottom: Bottom half
+      geometry: Exact bounds
+      keyframes: Keyframes at beat %{beat}
+      add_move: Add move key
+      add_scale: Add scale key
+      add_rotate: Add rotate key
+    multiple_noise_areas:
+      title: "%{amount} noise domains"
+      hint: Batch operations preserve each domain's animation and relative timing.
+      normal: Set as normal
+      subtract: Set as subtract
+      earlier: Shift 1 beat earlier
+      later: Shift 1 beat later
     curve_note_track:
       title:
         pending: Pending Curve Note Track
@@ -109,6 +156,7 @@ tab:
     timelines:
       new_note_timeline: + Note Timeline
       new_event_timeline: + Event Timeline
+      new_noise_timeline: + Noise Timeline
       binding: Binding
   audio_setting:
     title: Audio Setting

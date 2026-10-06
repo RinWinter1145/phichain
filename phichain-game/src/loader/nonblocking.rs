@@ -136,11 +136,15 @@ pub fn handle_tasks_system(
                         offset,
                         bpm_list,
                         lines,
+                        noise_areas,
                         ..
                     } = chart;
 
                     commands.insert_resource(offset);
                     commands.insert_resource(bpm_list);
+                    for (index, area) in noise_areas.0.into_iter().enumerate() {
+                        commands.spawn((area, crate::noise::NoiseAreaOrder(index)));
+                    }
 
                     for line in lines {
                         load_line(line, &mut commands, None);

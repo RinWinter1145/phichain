@@ -3,6 +3,7 @@ pub mod curve_note_track;
 pub mod event;
 pub mod line;
 pub mod meta;
+pub mod noise;
 pub mod note;
 
 use crate::editing::command::bpm_list::{CreateBpmPoint, EditBpmPoint, RemoveBpmPoint};
@@ -12,6 +13,7 @@ use crate::editing::command::line::{
     CreateLine, CreateLineFromSelected, MoveLineAsChild, RemoveLine,
 };
 use crate::editing::command::meta::{EditMeta, EditOffset};
+use crate::editing::command::noise::{CreateNoiseArea, EditNoiseArea, RemoveNoiseArea};
 use crate::editing::command::note::{CreateNote, EditNote, RemoveNote};
 use bevy::prelude::*;
 use undo::Edit;
@@ -40,6 +42,10 @@ pub enum EditorCommand {
 
     EditMeta(EditMeta),
     EditOffset(EditOffset),
+
+    CreateNoiseArea(CreateNoiseArea),
+    RemoveNoiseArea(RemoveNoiseArea),
+    EditNoiseArea(EditNoiseArea),
 
     CommandSequence(CommandSequence),
 }
@@ -108,5 +114,8 @@ impl_edit_for_command!(
     EditBpmPoint,
     EditMeta,
     EditOffset,
+    CreateNoiseArea,
+    RemoveNoiseArea,
+    EditNoiseArea,
     CommandSequence
 );

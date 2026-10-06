@@ -281,9 +281,14 @@ fn unload_project_system(
 
         // unload chart basic components
         use crate::selection::SelectedLine;
-        use phichain_chart::{bpm_list::BpmList, offset::Offset};
+        use phichain_chart::{bpm_list::BpmList, noise::NoiseArea, offset::Offset};
         world.remove_resource::<Offset>();
         world.remove_resource::<BpmList>();
+        let mut noise_query = world.query_filtered::<Entity, With<NoiseArea>>();
+        let noise_entities = noise_query.iter(world).collect::<Vec<_>>();
+        for entity in noise_entities {
+            world.entity_mut(entity).despawn();
+        }
         world.remove_resource::<SelectedLine>();
 
         // unload lines, notes and events

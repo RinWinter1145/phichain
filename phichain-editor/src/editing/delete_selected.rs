@@ -1,6 +1,7 @@
 use crate::action::ActionRegistrationExt;
 use crate::editing::command::curve_note_track::RemoveCurveNoteTrack;
 use crate::editing::command::event::RemoveEvent;
+use crate::editing::command::noise::RemoveNoiseArea;
 use crate::editing::command::note::RemoveNote;
 use crate::editing::command::{CommandSequence, EditorCommand};
 use crate::editing::DoCommand;
@@ -8,6 +9,7 @@ use crate::hotkey::Hotkey;
 use crate::selection::Selected;
 use bevy::prelude::*;
 use phichain_chart::event::LineEvent;
+use phichain_chart::noise::NoiseArea;
 use phichain_chart::note::Note;
 use phichain_game::curve_note_track::CurveNoteTrack;
 
@@ -28,6 +30,7 @@ fn delete_selected_system(
         Query<Entity, (With<Selected>, With<Note>)>,
         Query<Entity, (With<Selected>, With<LineEvent>)>,
         Query<Entity, (With<Selected>, With<CurveNoteTrack>)>,
+        Query<Entity, (With<Selected>, With<NoiseArea>)>,
     )>,
     mut events: MessageWriter<DoCommand>,
 ) -> Result {
@@ -46,6 +49,11 @@ fn delete_selected_system(
         sequence.0.push(EditorCommand::RemoveCurveNoteTrack(
             RemoveCurveNoteTrack::new(track),
         ));
+    }
+    for area in &set.p3() {
+        sequence
+            .0
+            .push(EditorCommand::RemoveNoiseArea(RemoveNoiseArea::new(area)));
     }
 
     if !sequence.0.is_empty() {

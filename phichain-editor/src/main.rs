@@ -97,6 +97,7 @@ use egui::RichText;
 use phichain_assets::AssetsPlugin;
 use phichain_chart::event::LineEvent;
 use phichain_chart::note::Note;
+use phichain_game::noise_postprocess::NoisePostProcessCamera;
 use phichain_game::{GamePlugin, GameSet};
 use rust_i18n::set_locale;
 use std::env;
@@ -392,7 +393,12 @@ fn ui_system(world: &mut World) {
 
 fn setup_system(mut commands: Commands) {
     // Game camera renders directly to screen, viewport constrained to game_tab's clip_rect
-    commands.spawn((Camera2d, GameCamera, IsDefaultUiCamera));
+    commands.spawn((
+        Camera2d,
+        GameCamera,
+        IsDefaultUiCamera,
+        NoisePostProcessCamera,
+    ));
 }
 
 fn setup_egui_system(mut commands: Commands, mut egui_global_settings: ResMut<EguiGlobalSettings>) {

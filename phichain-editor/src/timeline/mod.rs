@@ -1,6 +1,7 @@
 pub mod container;
 pub mod drag_selection;
 pub mod event;
+pub mod noise;
 pub mod note;
 pub mod settings;
 
@@ -8,6 +9,7 @@ use crate::constants::{BASE_ZOOM, INDICATOR_POSITION};
 use crate::tab::timeline::TimelineViewport;
 use crate::timeline::drag_selection::TimelineDragSelectionPlugin;
 use crate::timeline::event::EventTimeline;
+use crate::timeline::noise::NoiseTimeline;
 use crate::timeline::note::NoteTimeline;
 use crate::timeline::settings::TimelineSettings;
 use crate::timing::ChartTime;
@@ -125,6 +127,7 @@ pub trait Timeline {
 pub enum TimelineItem {
     Note(NoteTimeline),
     Event(EventTimeline),
+    Noise(NoiseTimeline),
 }
 
 impl TimelineItem {
@@ -132,6 +135,7 @@ impl TimelineItem {
         match self {
             TimelineItem::Note(timeline) => timeline.0,
             TimelineItem::Event(timeline) => timeline.0,
+            TimelineItem::Noise(_) => None,
         }
     }
 }
@@ -341,6 +345,7 @@ fn clean_dangle_timelines_observer(
             .position(|x| match &x.timeline {
                 TimelineItem::Note(timeline) => timeline.0 == Some(remove.entity),
                 TimelineItem::Event(timeline) => timeline.0 == Some(remove.entity),
+                TimelineItem::Noise(_) => false,
             })
     {
         info!("Removed timeline due to removal of line");

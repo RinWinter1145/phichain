@@ -3,6 +3,67 @@
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+pub struct OfficialPoint {
+    pub x: f32,
+    pub y: f32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct OfficialBlockMoveEvent {
+    pub time: f32,
+    #[serde(rename = "endPosition")]
+    pub end_position: OfficialPoint,
+    #[serde(rename = "easeTypeX")]
+    pub ease_type_x: u8,
+    #[serde(rename = "easeTypeY")]
+    pub ease_type_y: u8,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct OfficialBlockScaleEvent {
+    pub time: f32,
+    pub anchor: OfficialPoint,
+    pub scale: OfficialPoint,
+    #[serde(rename = "easeTypeX")]
+    pub ease_type_x: u8,
+    #[serde(rename = "easeTypeY")]
+    pub ease_type_y: u8,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct OfficialBlockRotateEvent {
+    pub time: f32,
+    pub anchor: OfficialPoint,
+    pub rotation: f32,
+    #[serde(rename = "easeType")]
+    pub ease_type: u8,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct OfficialBlockArea {
+    #[serde(rename = "topRightPercentage")]
+    pub top_right_percentage: OfficialPoint,
+    #[serde(rename = "bottomLeftPercentage")]
+    pub bottom_left_percentage: OfficialPoint,
+    #[serde(rename = "appearTime")]
+    pub appear_time: f32,
+    #[serde(rename = "enableTime")]
+    pub enable_time: f32,
+    #[serde(rename = "disableTime")]
+    pub disable_time: f32,
+    #[serde(rename = "disappearTime")]
+    pub disappear_time: f32,
+    #[serde(rename = "isSubtract")]
+    pub is_subtract: bool,
+    #[serde(rename = "moveEvents", default)]
+    pub move_events: Vec<OfficialBlockMoveEvent>,
+    #[serde(rename = "scaleEvents", default)]
+    pub scale_events: Vec<OfficialBlockScaleEvent>,
+    #[serde(rename = "rotateEvents", default)]
+    pub rotate_events: Vec<OfficialBlockRotateEvent>,
+}
+
 #[derive(Serialize_repr, Deserialize_repr, Debug)]
 #[repr(u8)]
 pub enum OfficialNoteKind {
@@ -93,4 +154,6 @@ pub struct OfficialChart {
     pub offset: f32,
     #[serde(rename = "judgeLineList")]
     pub lines: Vec<OfficialLine>,
+    #[serde(rename = "blockAreaList", default)]
+    pub block_areas: Vec<OfficialBlockArea>,
 }

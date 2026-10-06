@@ -9,6 +9,8 @@ pub mod illustration;
 mod layer;
 pub mod line;
 pub mod loader;
+pub mod noise;
+pub mod noise_postprocess;
 pub mod scale;
 mod score;
 pub mod serialization;
@@ -22,6 +24,7 @@ use crate::hit_effect::HitEffectPlugin;
 use crate::illustration::IllustrationPlugin;
 use crate::line::LinePlugin;
 use crate::loader::nonblocking::NonblockingLoaderPlugin;
+use crate::noise::NoiseAreaPlugin;
 use crate::score::ScorePlugin;
 use crate::ui::GameUiPlugin;
 use bevy::prelude::*;
@@ -115,6 +118,7 @@ impl Plugin for GamePlugin {
             .add_message::<PauseToggleRequest>()
             .add_plugins(NonblockingLoaderPlugin)
             .add_plugins(LinePlugin)
+            .add_plugins(NoiseAreaPlugin)
             .add_plugins(HighlightPlugin)
             .add_plugins(CoreGamePlugin)
             .add_plugins(CurveNoteTrackPlugin)

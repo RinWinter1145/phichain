@@ -4,6 +4,7 @@ pub mod chart_basic_setting;
 pub mod game;
 pub mod inspector;
 pub mod line_list;
+pub mod noise_areas;
 pub mod quick_action;
 pub mod settings;
 pub mod timeline;
@@ -16,6 +17,7 @@ use crate::tab::chart_basic_setting::chart_basic_setting_tab;
 use crate::tab::game::game_tab;
 use crate::tab::inspector::{inspector_ui_system, InspectorPlugin};
 use crate::tab::line_list::line_list_tab;
+use crate::tab::noise_areas::noise_areas_tab;
 use crate::tab::settings::settings_tab;
 use crate::tab::timeline::timeline_tab;
 use crate::tab::timeline_setting::timeline_setting_tab;
@@ -64,6 +66,7 @@ pub enum EditorTab {
     LineList,
     BpmList,
     Settings,
+    NoiseAreas,
 }
 
 impl IntoIdentifier for EditorTab {
@@ -77,6 +80,7 @@ impl IntoIdentifier for EditorTab {
             EditorTab::LineList => "line_list".into(),
             EditorTab::BpmList => "bpm_list".into(),
             EditorTab::Settings => "settings".into(),
+            EditorTab::NoiseAreas => "noise_areas".into(),
         }
     }
 }
@@ -94,6 +98,7 @@ impl Plugin for TabPlugin {
             .register_tab(EditorTab::BpmList, bpm_list_tab)
             .register_tab(EditorTab::LineList, line_list_tab)
             .register_tab(EditorTab::Settings, settings_tab)
+            .register_tab(EditorTab::NoiseAreas, noise_areas_tab)
             // TODO: move this upper
             .add_plugins(InspectorPlugin)
             .add_plugins(ActionPanelPlugin);

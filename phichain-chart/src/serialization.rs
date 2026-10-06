@@ -6,6 +6,7 @@ use crate::curve_note_track::CurveNoteTrack;
 use crate::event::{LineEvent, LineEventKind, LineEventValue};
 use crate::line::Line;
 use crate::migration::{migrate, CURRENT_FORMAT};
+use crate::noise::NoiseAreas;
 use crate::note::Note;
 use crate::offset::Offset;
 use thiserror::Error;
@@ -24,6 +25,7 @@ pub struct PhichainChart {
     pub offset: Offset,
     pub bpm_list: BpmList,
     pub lines: Vec<SerializedLine>,
+    pub noise_areas: NoiseAreas,
 }
 
 impl PhichainChart {
@@ -33,6 +35,7 @@ impl PhichainChart {
             offset: Offset(offset),
             bpm_list,
             lines,
+            noise_areas: NoiseAreas::default(),
         }
     }
 
@@ -67,6 +70,7 @@ impl PhichainChart {
             offset: Default::default(),
             bpm_list: Default::default(),
             lines: Default::default(),
+            noise_areas: Default::default(),
         }
     }
 }

@@ -37,14 +37,61 @@ menu_bar:
         cancel: 取消
 
 tab:
+  noise_areas:
+    title: 噪域
+    normal: 普通域
+    subtract: 扣除域
+    is_subtract: 扣除型噪域
+    top_right: 右上角百分比
+    bottom_left: 左下角百分比
+    appear: 出現拍
+    enable: 生效拍
+    disable: 失效拍
+    disappear: 消失拍
+    move_events: 移動事件
+    scale_events: 縮放事件
+    rotate_events: 旋轉事件
+    beat: 拍
+    end_position: 目標位置
+    anchor: 錨點
+    scale: 縮放
+    rotation: 旋轉
+    add_event: 新增事件
+    remove_event: 刪除事件
+    new: 新增噪域
+    remove: 刪除噪域
   game:
     title: 預覽
+    draw_noise_area: 繪製噪域
+    auto_key: 自動關鍵幀
+    subtract_domain: 扣除域
   timeline:
     title: 時間線
     event:
       jump_to_event: 跳轉至該事件
   inspector:
     title: 檢查器
+    noise_area:
+      title: 噪域
+      hint: 可在預覽畫面中直接拖動；時間軸可調整四段時序。
+      presets: 構圖預設
+      full: 全螢幕
+      left: 左半屏
+      right: 右半屏
+      top: 上半屏
+      bottom: 下半屏
+      geometry: 精確範圍
+      keyframes: 當前拍 %{beat} 的關鍵幀
+      add_move: 添加移動幀
+      add_scale: 添加縮放幀
+      add_rotate: 添加旋轉幀
+    multiple_noise_areas:
+      title: "%{amount} 個噪域"
+      hint: 批次操作會保留各噪域的動畫與相對時序。
+      normal: 設為普通域
+      subtract: 設為扣除域
+      earlier: 整體提前 1 拍
+      later: 整體延後 1 拍
     curve_note_track:
       title:
         pending: 正在新增的曲線音符軌跡
@@ -104,6 +151,7 @@ tab:
     timelines:
       new_note_timeline: + 音符時間線
       new_event_timeline: + 事件時間線
+      new_noise_timeline: + 噪域時間線
       binding: 綁定
     note_side_filter:
       title: 音符所屬側

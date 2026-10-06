@@ -3,6 +3,7 @@ pub mod nonblocking;
 use crate::curve_note_track::CurveNoteTrack;
 use crate::event::EventOf;
 use crate::illustration::{load_illustration, open_illustration};
+use crate::noise::NoiseAreaOrder;
 use anyhow::Context;
 use bevy::prelude::*;
 use phichain_chart::project::Project;
@@ -81,6 +82,10 @@ fn load_line(line: SerializedLine, commands: &mut Commands, parent: Option<Entit
 fn load(chart: PhichainChart, commands: &mut Commands) {
     commands.insert_resource(chart.offset);
     commands.insert_resource(chart.bpm_list);
+
+    for (index, area) in chart.noise_areas.0.into_iter().enumerate() {
+        commands.spawn((area, NoiseAreaOrder(index)));
+    }
 
     for line in chart.lines {
         load_line(line, commands, None);

@@ -5,6 +5,9 @@ use phichain_chart::bpm_list::BpmList;
 use phichain_chart::constants::{CANVAS_HEIGHT, CANVAS_WIDTH};
 use phichain_chart::event;
 use phichain_chart::event::{LineEvent, LineEventKind};
+use phichain_chart::noise::{
+    NoiseArea, NoiseAreas, NoiseMoveEvent, NoisePoint, NoiseRotateEvent, NoiseScaleEvent,
+};
 use phichain_chart::note::{Note, NoteKind};
 use phichain_chart::offset::Offset;
 use phichain_chart::serialization::{PhichainChart, SerializedLine};
@@ -26,9 +29,61 @@ pub fn official_to_phichain(
         ));
     }
 
+    let to_point = |point: crate::official::schema::OfficialPoint| NoisePoint {
+        x: point.x,
+        y: point.y,
+    };
+    let noise_areas = NoiseAreas(
+        official
+            .block_areas
+            .iter()
+            .map(|area| NoiseArea {
+                top_right_percentage: to_point(area.top_right_percentage),
+                bottom_left_percentage: to_point(area.bottom_left_percentage),
+                appear_beat: BpmList::single(official.lines[0].bpm).beat_at(area.appear_time),
+                enable_beat: BpmList::single(official.lines[0].bpm).beat_at(area.enable_time),
+                disable_beat: BpmList::single(official.lines[0].bpm).beat_at(area.disable_time),
+                disappear_beat: BpmList::single(official.lines[0].bpm).beat_at(area.disappear_time),
+                is_subtract: area.is_subtract,
+                move_events: area
+                    .move_events
+                    .iter()
+                    .map(|event| NoiseMoveEvent {
+                        beat: BpmList::single(official.lines[0].bpm).beat_at(event.time),
+                        end_position: to_point(event.end_position),
+                        ease_type_x: event.ease_type_x,
+                        ease_type_y: event.ease_type_y,
+                    })
+                    .collect(),
+                scale_events: area
+                    .scale_events
+                    .iter()
+                    .map(|event| NoiseScaleEvent {
+                        beat: BpmList::single(official.lines[0].bpm).beat_at(event.time),
+                        anchor: to_point(event.anchor),
+                        scale: to_point(event.scale),
+                        ease_type_x: event.ease_type_x,
+                        ease_type_y: event.ease_type_y,
+                    })
+                    .collect(),
+                rotate_events: area
+                    .rotate_events
+                    .iter()
+                    .map(|event| NoiseRotateEvent {
+                        beat: BpmList::single(official.lines[0].bpm).beat_at(event.time),
+                        anchor: to_point(event.anchor),
+                        rotation: event.rotation,
+                        ease_type: event.ease_type,
+                    })
+                    .collect(),
+            })
+            .collect(),
+    );
+
     let mut phichain = PhichainChart {
         offset: Offset(official.offset * 1000.0),
         bpm_list: BpmList::single(official.lines[0].bpm),
+        noise_areas,
         ..PhichainChart::empty()
     };
 

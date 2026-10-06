@@ -1,7 +1,8 @@
 use crate::compile::steps::{evaluate_curve_note_tracks, merge_children_line};
 use crate::official::schema::{
+    OfficialBlockArea, OfficialBlockMoveEvent, OfficialBlockRotateEvent, OfficialBlockScaleEvent,
     OfficialChart, OfficialLine, OfficialNote, OfficialNoteKind, OfficialNumericLineEvent,
-    OfficialPositionLineEvent, OfficialSpeedEvent,
+    OfficialPoint, OfficialPositionLineEvent, OfficialSpeedEvent,
 };
 use crate::official::{OfficialOutputError, OfficialOutputOptions};
 use phichain_chart::beat;
@@ -34,6 +35,57 @@ pub fn phichain_to_official(
         format_version: 3,
         offset,
         lines: vec![],
+        block_areas: phichain
+            .noise_areas
+            .0
+            .iter()
+            .map(|area| {
+                let point = |point: phichain_chart::noise::NoisePoint| OfficialPoint {
+                    x: point.x,
+                    y: point.y,
+                };
+                OfficialBlockArea {
+                    top_right_percentage: point(area.top_right_percentage),
+                    bottom_left_percentage: point(area.bottom_left_percentage),
+                    appear_time: phichain.bpm_list.time_at(area.appear_beat),
+                    enable_time: phichain.bpm_list.time_at(area.enable_beat),
+                    disable_time: phichain.bpm_list.time_at(area.disable_beat),
+                    disappear_time: phichain.bpm_list.time_at(area.disappear_beat),
+                    is_subtract: area.is_subtract,
+                    move_events: area
+                        .move_events
+                        .iter()
+                        .map(|event| OfficialBlockMoveEvent {
+                            time: phichain.bpm_list.time_at(event.beat),
+                            end_position: point(event.end_position),
+                            ease_type_x: event.ease_type_x,
+                            ease_type_y: event.ease_type_y,
+                        })
+                        .collect(),
+                    scale_events: area
+                        .scale_events
+                        .iter()
+                        .map(|event| OfficialBlockScaleEvent {
+                            time: phichain.bpm_list.time_at(event.beat),
+                            anchor: point(event.anchor),
+                            scale: point(event.scale),
+                            ease_type_x: event.ease_type_x,
+                            ease_type_y: event.ease_type_y,
+                        })
+                        .collect(),
+                    rotate_events: area
+                        .rotate_events
+                        .iter()
+                        .map(|event| OfficialBlockRotateEvent {
+                            time: phichain.bpm_list.time_at(event.beat),
+                            anchor: point(event.anchor),
+                            rotation: event.rotation,
+                            ease_type: event.ease_type,
+                        })
+                        .collect(),
+                }
+            })
+            .collect(),
     };
 
     for line in phichain.lines {

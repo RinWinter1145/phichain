@@ -1,4 +1,5 @@
 use crate::timeline::event::EventTimeline;
+use crate::timeline::noise::NoiseTimeline;
 use crate::timeline::note::NoteTimeline;
 use crate::timeline::TimelineItem;
 use egui::Rect;
@@ -34,10 +35,14 @@ impl Default for TimelineContainer {
             timelines: vec![
                 ManagedTimeline {
                     timeline: TimelineItem::Note(NoteTimeline::new_binding()),
-                    fraction: 2.0 / 3.0,
+                    fraction: 0.55,
                 },
                 ManagedTimeline {
                     timeline: TimelineItem::Event(EventTimeline::new_binding()),
+                    fraction: 0.82,
+                },
+                ManagedTimeline {
+                    timeline: TimelineItem::Noise(NoiseTimeline),
                     fraction: 1.0,
                 },
             ],

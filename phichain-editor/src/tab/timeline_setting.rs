@@ -1,4 +1,5 @@
 use crate::timeline::event::EventTimeline;
+use crate::timeline::noise::NoiseTimeline;
 use crate::timeline::note::NoteTimeline;
 use crate::timeline::settings::TimelineSettings;
 use crate::timeline::Timeline;
@@ -79,7 +80,7 @@ pub fn timeline_setting_tab(In(mut ui): In<Ui>, world: &mut World) {
 
     {
         ui.separator();
-        ui.columns(2, |columns| {
+        ui.columns(3, |columns| {
             columns[0].menu_button(
                 t!("tab.timeline_setting.timelines.new_note_timeline"),
                 |ui| {
@@ -131,6 +132,14 @@ pub fn timeline_setting_tab(In(mut ui): In<Ui>, world: &mut World) {
                     }
                 },
             );
+            if columns[2]
+                .button(t!("tab.timeline_setting.timelines.new_noise_timeline"))
+                .clicked()
+            {
+                timeline_settings
+                    .container
+                    .push_right(TimelineItem::Noise(NoiseTimeline));
+            }
         });
 
         ui.end_row();

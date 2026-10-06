@@ -37,14 +37,61 @@ menu_bar:
         cancel: キャンセル
 
 tab:
+  noise_areas:
+    title: ノイズ領域
+    normal: 通常
+    subtract: 差分
+    is_subtract: 差分領域
+    top_right: 右上（比率）
+    bottom_left: 左下（比率）
+    appear: 表示開始拍
+    enable: 有効開始拍
+    disable: 有効終了拍
+    disappear: 表示終了拍
+    move_events: 移動イベント
+    scale_events: 拡縮イベント
+    rotate_events: 回転イベント
+    beat: 拍
+    end_position: 終点
+    anchor: アンカー
+    scale: スケール
+    rotation: 回転
+    add_event: イベントを追加
+    remove_event: イベントを削除
+    new: ノイズ領域を追加
+    remove: ノイズ領域を削除
   game:
     title: プレビュー
+    draw_noise_area: ノイズ領域を描画
+    auto_key: オートキー
+    subtract_domain: 減算領域
   timeline:
     title: タイムライン
     event:
       jump_to_event: このイベントにジャンプ
   inspector:
     title: インスペクター
+    noise_area:
+      title: ノイズ領域
+      hint: プレビュー上で直接ドラッグし、タイムラインで4段階を調整できます。
+      presets: 構図プリセット
+      full: 全画面
+      left: 左半分
+      right: 右半分
+      top: 上半分
+      bottom: 下半分
+      geometry: 正確な範囲
+      keyframes: 現在の拍 %{beat} のキーフレーム
+      add_move: 移動キーを追加
+      add_scale: 拡縮キーを追加
+      add_rotate: 回転キーを追加
+    multiple_noise_areas:
+      title: "%{amount} 個のノイズ領域"
+      hint: 一括操作でも各領域のアニメーションと相対タイミングを維持します。
+      normal: 通常領域に設定
+      subtract: 減算領域に設定
+      earlier: 全体を1拍早める
+      later: 全体を1拍遅らせる
     curve_note_track:
       title:
         pending: 作成中のカーブノーツトラック
@@ -104,6 +151,7 @@ tab:
     timelines:
       new_note_timeline: + ノーツタイムライン
       new_event_timeline: + イベントタイムライン
+      new_noise_timeline: + ノイズ領域タイムライン
       binding: バインド
     note_side_filter:
       title: ノーツの配置側
