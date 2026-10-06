@@ -49,13 +49,16 @@ fn on_click_noise_area(
     mut click: On<Pointer<Click>>,
     areas: Query<(Entity, &NoiseArea, &NoiseAreaOrder, Option<&Selected>)>,
     viewport: Res<GameViewport>,
-    bpm_list: Res<BpmList>,
+    bpm_list: Option<Res<BpmList>>,
     chart_time: Res<ChartTime>,
     mut select: MessageWriter<Select>,
 ) {
     if click.button != PointerButton::Primary || areas.get(click.entity).is_err() {
         return;
     }
+    let Some(bpm_list) = bpm_list.as_deref() else {
+        return;
+    };
     let Some(hit) = click.hit.position else {
         return;
     };
@@ -69,7 +72,7 @@ fn on_click_noise_area(
     let point = Vec2::new(hit.x / scale.x, hit.y / scale.y);
     let mut candidates = areas
         .iter()
-        .filter(|(_, area, _, _)| area.rect_at(chart_time.0, &bpm_list).contains(point))
+        .filter(|(_, area, _, _)| area.rect_at(chart_time.0, bpm_list).contains(point))
         .collect::<Vec<_>>();
     candidates.sort_by_key(|(_, _, order, _)| std::cmp::Reverse(order.0));
     let next = candidates
@@ -87,7 +90,7 @@ fn on_drag_start_noise_area(
     event: On<Pointer<DragStart>>,
     areas: Query<(Entity, &NoiseArea, Option<&Selected>)>,
     viewport: Res<GameViewport>,
-    bpm_list: Res<BpmList>,
+    bpm_list: Option<Res<BpmList>>,
     chart_time: Res<ChartTime>,
     mut drag: ResMut<NoiseDrag>,
     mut select: MessageWriter<Select>,
@@ -95,6 +98,9 @@ fn on_drag_start_noise_area(
     if event.button != PointerButton::Primary {
         return;
     }
+    let Some(bpm_list) = bpm_list.as_deref() else {
+        return;
+    };
     let Ok((_, picked, _)) = areas.get(event.entity) else {
         return;
     };
@@ -112,7 +118,7 @@ fn on_drag_start_noise_area(
         areas
             .iter()
             .find(|(_, area, selected)| {
-                selected.is_some() && area.rect_at(chart_time.0, &bpm_list).contains(point)
+                selected.is_some() && area.rect_at(chart_time.0, bpm_list).contains(point)
             })
             .map(|(entity, area, _)| (entity, area.clone()))
     });
@@ -130,12 +136,15 @@ fn on_drag_noise_area(
     drag: Res<NoiseDrag>,
     viewport: Res<GameViewport>,
     tool: Res<NoiseEditTool>,
-    bpm_list: Res<BpmList>,
+    bpm_list: Option<Res<BpmList>>,
     chart_time: Res<ChartTime>,
 ) {
     if drag.pointer_entity != Some(event.entity) {
         return;
     }
+    let Some(bpm_list) = bpm_list.as_deref() else {
+        return;
+    };
     let Some((entity, original)) = drag.area.as_ref() else {
         return;
     };
@@ -148,7 +157,7 @@ fn on_drag_noise_area(
         *area = original.clone();
         if tool.auto_key {
             let beat = bpm_list.beat_at(chart_time.0);
-            let original_center = original.rect_at(chart_time.0, &bpm_list).center;
+            let original_center = original.rect_at(chart_time.0, bpm_list).center;
             let desired_center = snap_noise_point(
                 NoisePoint::from_world(
                     original_center
@@ -170,7 +179,7 @@ fn on_drag_noise_area(
                 beat,
                 end_position: original.move_target_for_center(
                     chart_time.0,
-                    &bpm_list,
+                    bpm_list,
                     desired_center,
                 ),
                 ease_type_x,

@@ -8,6 +8,7 @@ use crate::editing::pending::Pending;
 use crate::editing::DoCommand;
 use crate::hotkey::{Hotkey, HotkeyContext, HotkeyExt};
 use crate::identifier::{Identifier, IntoIdentifier};
+use crate::project::project_loaded;
 use crate::schedule::EditorSet;
 use crate::selection::SelectedLine;
 use crate::timeline::{TimelineContext, TimelineItem};
@@ -35,7 +36,9 @@ impl Plugin for CreateEventPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (create_event_system, remove_pending_event_on_esc_system).in_set(EditorSet::Edit),
+            (create_event_system, remove_pending_event_on_esc_system)
+                .in_set(EditorSet::Edit)
+                .run_if(project_loaded()),
         )
         .add_hotkey(
             CreateEventHotkeys::PlaceTransitionEvent,
