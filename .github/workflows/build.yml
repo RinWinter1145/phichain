@@ -61,16 +61,6 @@ jobs:
           - platform: windows
             os: windows-latest
             target: x86_64-pc-windows-msvc
-          - platform: windows
-            os: windows-latest
-            target: aarch64-pc-windows-msvc
-
-          - platform: macOS
-            os: macOS-latest
-            target: x86_64-apple-darwin
-          - platform: macOS
-            os: macOS-latest
-            target: aarch64-apple-darwin
 
     runs-on: ${{ matrix.os }}
 
