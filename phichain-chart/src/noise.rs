@@ -156,6 +156,7 @@ impl NoiseArea {
         if let Some(existing) = self
             .move_events
             .iter_mut()
+            .rev()
             .find(|existing| existing.beat == event.beat)
         {
             *existing = event;
@@ -169,6 +170,7 @@ impl NoiseArea {
         if let Some(existing) = self
             .scale_events
             .iter_mut()
+            .rev()
             .find(|existing| existing.beat == event.beat)
         {
             *existing = event;
@@ -182,6 +184,7 @@ impl NoiseArea {
         if let Some(existing) = self
             .rotate_events
             .iter_mut()
+            .rev()
             .find(|existing| existing.beat == event.beat)
         {
             *existing = event;
@@ -217,90 +220,82 @@ impl NoiseArea {
         let scale_index = current_index(&self.scale_events, seconds, bpm_list, |e| e.beat);
         if let Some(index) = scale_index {
             let current = self.scale_events[index];
-            let evaluated_scale = if index == 0 {
-                if let Some(following) = self.scale_events.get(1).copied() {
-                    NoisePoint::new(
-                        lerp(
-                            current.scale.x,
-                            following.scale.x,
-                            event_progress(
-                                current.beat,
-                                following.beat,
-                                current.ease_type_x,
-                                seconds,
-                                bpm_list,
-                            ),
-                        ),
-                        lerp(
-                            current.scale.y,
-                            following.scale.y,
-                            event_progress(
-                                current.beat,
-                                following.beat,
-                                current.ease_type_y,
-                                seconds,
-                                bpm_list,
-                            ),
-                        ),
-                    )
-                } else {
-                    current.scale
-                }
-            } else {
-                for pair_index in 1..=index {
-                    let previous = self.scale_events[pair_index - 1];
-                    let next = self.scale_events[pair_index];
-                    center = scale_around(
-                        center,
-                        previous.anchor.world(),
-                        safe_div(next.scale.x, previous.scale.x),
-                        safe_div(next.scale.y, previous.scale.y),
-                    );
-                }
-                current.scale
-            };
-            if index == 0 {
+            for pair_index in 1..=index {
+                let previous = self.scale_events[pair_index - 1];
+                let next = self.scale_events[pair_index];
                 center = scale_around(
                     center,
-                    current.anchor.world(),
-                    safe_div(evaluated_scale.x, current.scale.x),
-                    safe_div(evaluated_scale.y, current.scale.y),
+                    previous.anchor.world(),
+                    safe_div(next.scale.x, previous.scale.x),
+                    safe_div(next.scale.y, previous.scale.y),
                 );
             }
+            let evaluated_scale = if let Some(following) = self.scale_events.get(index + 1).copied()
+            {
+                NoisePoint::new(
+                    lerp(
+                        current.scale.x,
+                        following.scale.x,
+                        event_progress(
+                            current.beat,
+                            following.beat,
+                            current.ease_type_x,
+                            seconds,
+                            bpm_list,
+                        ),
+                    ),
+                    lerp(
+                        current.scale.y,
+                        following.scale.y,
+                        event_progress(
+                            current.beat,
+                            following.beat,
+                            current.ease_type_y,
+                            seconds,
+                            bpm_list,
+                        ),
+                    ),
+                )
+            } else {
+                current.scale
+            };
+            center = scale_around(
+                center,
+                current.anchor.world(),
+                safe_div(evaluated_scale.x, current.scale.x),
+                safe_div(evaluated_scale.y, current.scale.y),
+            );
             size *= Vec2::new(evaluated_scale.x, evaluated_scale.y);
         }
 
         let rotate_index = current_index(&self.rotate_events, seconds, bpm_list, |e| e.beat);
         if let Some(index) = rotate_index {
             let current = self.rotate_events[index];
-            if index == 0 {
-                rotation = if let Some(following) = self.rotate_events.get(1).copied() {
-                    lerp(
-                        current.rotation,
-                        following.rotation,
-                        event_progress(
-                            current.beat,
-                            following.beat,
-                            current.ease_type,
-                            seconds,
-                            bpm_list,
-                        ),
-                    )
-                } else {
-                    current.rotation
-                };
-                center = rotate_around(center, current.anchor.world(), rotation - current.rotation);
-            } else {
-                for pair_index in 1..=index {
-                    let previous = self.rotate_events[pair_index - 1];
-                    let next = self.rotate_events[pair_index];
-                    center = rotate_around(
-                        center,
-                        previous.anchor.world(),
-                        next.rotation - previous.rotation,
-                    );
-                }
+            for pair_index in 1..=index {
+                let previous = self.rotate_events[pair_index - 1];
+                let next = self.rotate_events[pair_index];
+                center = rotate_around(
+                    center,
+                    previous.anchor.world(),
+                    next.rotation - previous.rotation,
+                );
             }
+            rotation = if let Some(following) = self.rotate_events.get(index + 1).copied() {
+                lerp(
+                    current.rotation,
+                    following.rotation,
+                    event_progress(
+                        current.beat,
+                        following.beat,
+                        current.ease_type,
+                        seconds,
+                        bpm_list,
+                    ),
+                )
+            } else {
+                current.rotation
+            };
+            center = rotate_around(center, current.anchor.world(), rotation - current.rotation);
         }
 
         let move_index = current_index(&self.move_events, seconds, bpm_list, |e| e.beat);
@@ -460,6 +455,7 @@ fn rotate_around(point: Vec2, anchor: Vec2, degrees: f32) -> Vec2 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::beat;
 
     #[test]
     fn active_window_is_left_closed_right_open() {
@@ -567,5 +563,121 @@ mod tests {
         });
         let actual = area.rect_at(1.0, &bpm).center;
         assert!((actual - desired).length() < 0.001, "{actual:?}");
+    }
+
+    #[test]
+    fn duplicate_beat_move_event_jumps_then_continues() {
+        let bpm = BpmList::single(60.0);
+        let area = NoiseArea {
+            move_events: vec![
+                NoiseMoveEvent {
+                    beat: beat!(0),
+                    end_position: NoisePoint::new(0.5, 0.5),
+                    ease_type_x: 0,
+                    ease_type_y: 0,
+                },
+                NoiseMoveEvent {
+                    beat: beat!(1),
+                    end_position: NoisePoint::new(0.5, 1.5),
+                    ease_type_x: 0,
+                    ease_type_y: 0,
+                },
+                NoiseMoveEvent {
+                    beat: beat!(1),
+                    end_position: NoisePoint::new(0.5, -1.5),
+                    ease_type_x: 0,
+                    ease_type_y: 0,
+                },
+                NoiseMoveEvent {
+                    beat: beat!(2),
+                    end_position: NoisePoint::new(0.5, 0.5),
+                    ease_type_x: 0,
+                    ease_type_y: 0,
+                },
+            ],
+            ..NoiseArea::default()
+        };
+
+        assert!((area.rect_at(1.0, &bpm).center.y + 2.0 * CANVAS_HEIGHT).abs() < 0.001);
+        assert!((area.rect_at(1.5, &bpm).center.y + CANVAS_HEIGHT).abs() < 0.001);
+        assert!(area.rect_at(2.0, &bpm).center.y.abs() < 0.001);
+    }
+
+    #[test]
+    fn scale_and_rotation_interpolate_after_same_beat_jump() {
+        let bpm = BpmList::single(60.0);
+        let center = NoisePoint::new(0.5, 0.5);
+        let area = NoiseArea {
+            scale_events: vec![
+                NoiseScaleEvent {
+                    beat: beat!(0),
+                    anchor: center,
+                    scale: NoisePoint::new(1.0, 1.0),
+                    ease_type_x: 0,
+                    ease_type_y: 0,
+                },
+                NoiseScaleEvent {
+                    beat: beat!(1),
+                    anchor: center,
+                    scale: NoisePoint::new(0.5, 0.5),
+                    ease_type_x: 0,
+                    ease_type_y: 0,
+                },
+                NoiseScaleEvent {
+                    beat: beat!(1),
+                    anchor: center,
+                    scale: NoisePoint::new(1.0, 1.0),
+                    ease_type_x: 0,
+                    ease_type_y: 0,
+                },
+                NoiseScaleEvent {
+                    beat: beat!(2),
+                    anchor: center,
+                    scale: NoisePoint::new(2.0, 2.0),
+                    ease_type_x: 0,
+                    ease_type_y: 0,
+                },
+            ],
+            rotate_events: vec![
+                NoiseRotateEvent {
+                    beat: beat!(0),
+                    anchor: center,
+                    rotation: 0.0,
+                    ease_type: 0,
+                },
+                NoiseRotateEvent {
+                    beat: beat!(1),
+                    anchor: center,
+                    rotation: 90.0,
+                    ease_type: 0,
+                },
+                NoiseRotateEvent {
+                    beat: beat!(1),
+                    anchor: center,
+                    rotation: 0.0,
+                    ease_type: 0,
+                },
+                NoiseRotateEvent {
+                    beat: beat!(2),
+                    anchor: center,
+                    rotation: 90.0,
+                    ease_type: 0,
+                },
+            ],
+            ..NoiseArea::default()
+        };
+
+        let base_size = NoiseArea::default().rect_at(0.0, &bpm).size;
+        let at_jump = area.rect_at(1.0, &bpm);
+        assert!((at_jump.size - base_size).length() < 0.001);
+        assert!(at_jump.rotation_degrees.abs() < 0.001);
+
+        let halfway = area.rect_at(1.5, &bpm);
+        assert!((halfway.size - base_size * 1.5).length() < 0.001);
+        assert!((halfway.rotation_degrees - 45.0).abs() < 0.001);
+
+        let end = area.rect_at(2.0, &bpm);
+        assert!((end.size - base_size * 2.0).length() < 0.001);
+        assert!((end.rotation_degrees - 90.0).abs() < 0.001);
     }
 }

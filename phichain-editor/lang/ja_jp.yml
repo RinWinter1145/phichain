@@ -52,13 +52,23 @@ tab:
     move_events: 移動イベント
     scale_events: 拡縮イベント
     rotate_events: 回転イベント
+    segment: アニメーション区間
+    instant_segment: 同拍ジャンプ
     beat: 拍
+    start_beat: 開始拍
+    end_beat: 終了拍
+    start_position: 開始位置
     end_position: 終点
     anchor: アンカー
     scale: スケール
+    start_scale: 開始スケール
+    end_scale: 終了スケール
     rotation: 回転
+    start_rotation: 開始回転
+    end_rotation: 終了回転
     add_event: イベントを追加
     remove_event: イベントを削除
+    remove_segment: 区間の終点を削除
     new: ノイズ領域を追加
     remove: ノイズ領域を削除
   game:

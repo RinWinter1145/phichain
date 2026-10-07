@@ -52,13 +52,23 @@ tab:
     move_events: 移动事件
     scale_events: 缩放事件
     rotate_events: 旋转事件
+    segment: 动画段
+    instant_segment: 同拍瞬变段
     beat: 拍
+    start_beat: 起始拍
+    end_beat: 结束拍
+    start_position: 起始位置
     end_position: 目标位置
     anchor: 锚点
     scale: 缩放
+    start_scale: 起始缩放
+    end_scale: 结束缩放
     rotation: 旋转
+    start_rotation: 起始旋转
+    end_rotation: 结束旋转
     add_event: 添加事件
     remove_event: 删除事件
+    remove_segment: 删除该段终点
     new: 新建噪域
     remove: 删除噪域
   game:

@@ -292,7 +292,11 @@ fn preserve_visual_center(
 fn current_keyframes(ui: &mut Ui, area: &mut NoiseArea, beat: Beat) -> bool {
     let mut finished = false;
     let mut remove_move = None;
-    if let Some(index) = area.move_events.iter().position(|event| event.beat == beat) {
+    if let Some(index) = area
+        .move_events
+        .iter()
+        .rposition(|event| event.beat == beat)
+    {
         let event = &mut area.move_events[index];
         ui.collapsing(t!("tab.noise_areas.move_events"), |ui| {
             finished |= point_row(
@@ -315,7 +319,7 @@ fn current_keyframes(ui: &mut Ui, area: &mut NoiseArea, beat: Beat) -> bool {
     if let Some(index) = area
         .scale_events
         .iter()
-        .position(|event| event.beat == beat)
+        .rposition(|event| event.beat == beat)
     {
         let event = &mut area.scale_events[index];
         ui.collapsing(t!("tab.noise_areas.scale_events"), |ui| {
@@ -336,7 +340,7 @@ fn current_keyframes(ui: &mut Ui, area: &mut NoiseArea, beat: Beat) -> bool {
     if let Some(index) = area
         .rotate_events
         .iter()
-        .position(|event| event.beat == beat)
+        .rposition(|event| event.beat == beat)
     {
         let event = &mut area.rotate_events[index];
         ui.collapsing(t!("tab.noise_areas.rotate_events"), |ui| {
