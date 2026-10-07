@@ -9,6 +9,7 @@
 [![Dev Builds](https://github.com/Ivan-1F/phichain/actions/workflows/cargo.yml/badge.svg)](https://github.com/Ivan-1F/phichain/actions/workflows/cargo.yml)
 
 基于 Rust 和 Bevy 的 Phigros 制谱工具链
+此下游版本添加了完整的噪域编辑功能
 
 > [!NOTE]
 > 本项目为非官方项目，与南京鸽游网络有限公司（Pigeon Games）及《Phigros》官方不存在授权、合作或运营关系
