@@ -8,7 +8,7 @@
 [![GitHub License](https://img.shields.io/github/license/Ivan-1F/phichain)](https://github.com/Ivan-1F/phichain/blob/master/LICENSE)
 [![Dev Builds](https://github.com/Ivan-1F/phichain/actions/workflows/cargo.yml/badge.svg)](https://github.com/Ivan-1F/phichain/actions/workflows/cargo.yml)
 
-基于 Rust 和 Bevy 的 Phigros 制谱工具链
+基于 Rust 和 Bevy 的 Phigros 制谱工具链  
 此下游版本添加了完整的噪域编辑功能
 
 > [!NOTE]
