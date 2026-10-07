@@ -1,5 +1,5 @@
 use crate::noise::NoiseComposite;
-use crate::ChartTime;
+use crate::{ChartTime, GameConfig};
 use bevy::core_pipeline::{
     core_2d::graph::{Core2d, Node2d},
     FullscreenShader,
@@ -34,7 +34,9 @@ pub struct NoisePostProcessCamera;
 #[derive(Component, Clone, ExtractComponent)]
 struct NoisePostProcessTextures {
     mask: Handle<Image>,
+    effect: Handle<Image>,
     displacement: Handle<Image>,
+    spark: Handle<Image>,
 }
 
 #[derive(Component, Clone, Copy, Default, ExtractComponent, ShaderType)]
@@ -43,6 +45,8 @@ struct NoisePostProcessSettings {
     strength: f32,
     pixel_scale: f32,
     _padding: f32,
+    viewport_origin: Vec2,
+    viewport_size: Vec2,
 }
 
 pub(crate) struct NoisePostProcessPlugin;
@@ -92,10 +96,13 @@ fn attach_noise_post_process(
         commands.entity(entity).insert((
             NoisePostProcessTextures {
                 mask: composite.mask.clone(),
+                effect: composite.effect.clone(),
                 displacement: composite.displacement.clone(),
+                spark: composite.spark.clone(),
             },
             NoisePostProcessSettings {
-                strength: 0.015,
+                // Values serialized in the official ActiveBlock material.
+                strength: 0.35,
                 pixel_scale: 6.0,
                 ..default()
             },
@@ -104,11 +111,25 @@ fn attach_noise_post_process(
 }
 
 fn update_noise_post_process_time(
-    time: Res<ChartTime>,
-    mut settings: Query<&mut NoisePostProcessSettings>,
+    chart_time: Res<ChartTime>,
+    frame_time: Res<Time>,
+    game_config: Res<GameConfig>,
+    mut settings: Query<(&mut NoisePostProcessSettings, &Camera)>,
 ) {
-    for mut settings in &mut settings {
-        settings.time = time.0;
+    for (mut settings, camera) in &mut settings {
+        settings.time = if game_config.hit_effect_follow_game_time {
+            chart_time.0
+        } else {
+            frame_time.elapsed_secs()
+        };
+        if let Some(viewport) = camera.viewport.as_ref() {
+            settings.viewport_origin = viewport.physical_position.as_vec2();
+            settings.viewport_size = viewport.physical_size.as_vec2();
+        } else {
+            // A zero size tells the shader to use the complete render target.
+            settings.viewport_origin = Vec2::ZERO;
+            settings.viewport_size = Vec2::ZERO;
+        }
     }
 }
 
@@ -143,9 +164,11 @@ impl ViewNode for NoisePostProcessNode {
             return Ok(());
         };
         let gpu_images = world.resource::<RenderAssets<GpuImage>>();
-        let (Some(mask), Some(displacement)) = (
+        let (Some(mask), Some(effect), Some(displacement), Some(spark)) = (
             gpu_images.get(&textures.mask),
+            gpu_images.get(&textures.effect),
             gpu_images.get(&textures.displacement),
+            gpu_images.get(&textures.spark),
         ) else {
             return Ok(());
         };
@@ -159,8 +182,12 @@ impl ViewNode for NoisePostProcessNode {
                 &pipeline.sampler,
                 &mask.texture_view,
                 &mask.sampler,
+                &effect.texture_view,
+                &effect.sampler,
                 &displacement.texture_view,
                 &displacement.sampler,
+                &spark.texture_view,
+                &spark.sampler,
                 settings_binding.clone(),
             )),
         );
@@ -202,6 +229,10 @@ fn init_pipeline(
         &BindGroupLayoutEntries::sequential(
             ShaderStages::FRAGMENT,
             (
+                texture_2d(TextureSampleType::Float { filterable: true }),
+                sampler(SamplerBindingType::Filtering),
+                texture_2d(TextureSampleType::Float { filterable: true }),
+                sampler(SamplerBindingType::Filtering),
                 texture_2d(TextureSampleType::Float { filterable: true }),
                 sampler(SamplerBindingType::Filtering),
                 texture_2d(TextureSampleType::Float { filterable: true }),
