@@ -42,6 +42,7 @@ tab:
     normal: 通常
     subtract: 差分
     is_subtract: 差分領域
+    visual_only: 表示専用（入力を遮断しない）
     top_right: 右上（比率）
     bottom_left: 左下（比率）
     appear: 表示開始拍

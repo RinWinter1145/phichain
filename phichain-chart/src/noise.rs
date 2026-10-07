@@ -110,6 +110,28 @@ impl Default for NoiseArea {
 }
 
 impl NoiseArea {
+    /// A visible-only (often called "fake") domain has an empty blocking
+    /// window. Phigros still renders it through ReadyBlock/DisabledBlock, but
+    /// it can never reject a touch.
+    pub fn is_visual_only(&self) -> bool {
+        self.enable_beat >= self.disable_beat
+    }
+
+    pub fn set_visual_only(&mut self, visual_only: bool) {
+        if visual_only {
+            self.disable_beat = self.enable_beat;
+            if self.disappear_beat <= self.disable_beat {
+                self.disappear_beat = self.disable_beat + Beat::ONE;
+            }
+        } else if self.disable_beat <= self.enable_beat {
+            self.disable_beat = self.disappear_beat;
+            if self.disable_beat <= self.enable_beat {
+                self.disable_beat = self.enable_beat + Beat::ONE;
+                self.disappear_beat = self.disable_beat;
+            }
+        }
+    }
+
     /// Converts a desired visual center into the absolute move target used by the official format.
     /// Scale and rotation are evaluated first, so writing the visual center directly would apply
     /// their center offset twice whenever either transform uses an off-center anchor.
@@ -446,6 +468,21 @@ mod tests {
         assert!(area.is_active(0.0, &bpm));
         assert!(area.is_active(0.999, &bpm));
         assert!(!area.is_active(1.0, &bpm));
+    }
+
+    #[test]
+    fn visual_only_domain_stays_visible_without_blocking() {
+        let bpm = BpmList::single(60.0);
+        let mut area = NoiseArea {
+            disappear_beat: crate::beat!(4),
+            ..NoiseArea::default()
+        };
+        area.set_visual_only(true);
+
+        assert!(area.is_visual_only());
+        assert!(area.is_visible(0.5, &bpm));
+        assert!(!area.is_active(0.0, &bpm));
+        assert!(!hit_test(&NoiseAreas(vec![area]), Vec2::ZERO, 0.5, &bpm));
     }
 
     #[test]

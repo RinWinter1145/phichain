@@ -112,7 +112,7 @@ mod tests {
             "topRightPercentage": {"x": 0.9, "y": 0.8},
             "bottomLeftPercentage": {"x": 0.1, "y": 0.2},
             "appearTime": 1.0, "enableTime": 1.5,
-            "disableTime": 3.0, "disappearTime": 3.5,
+            "disableTime": 1.5, "disappearTime": 3.5,
             "isSubtract": true,
             "moveEvents": [{"time": 2.0, "endPosition": {"x": 0.6, "y": 0.4}, "easeTypeX": 3, "easeTypeY": 4}],
             "scaleEvents": [{"time": 2.25, "anchor": {"x": 0.5, "y": 0.5}, "scale": {"x": 1.2, "y": 0.8}, "easeTypeX": 5, "easeTypeY": 6}],
@@ -127,6 +127,7 @@ mod tests {
         assert!(area.is_subtract);
         assert_eq!(area.appear_beat, beat!(2));
         assert_eq!(area.enable_beat, beat!(3));
+        assert!(area.is_visual_only());
         assert_eq!(area.move_events[0].beat, beat!(4));
         assert!((area.top_right_percentage.y - 0.2).abs() < 1e-5);
         assert!((area.bottom_left_percentage.y - 0.8).abs() < 1e-5);
@@ -141,6 +142,7 @@ mod tests {
         let value = serde_json::to_value(output).unwrap();
         let area = &value["blockAreaList"][0];
         assert_eq!(area["isSubtract"], true);
+        assert_eq!(area["enableTime"], area["disableTime"]);
         assert!((area["moveEvents"][0]["endPosition"]["x"].as_f64().unwrap() - 0.6).abs() < 1e-5);
         assert_eq!(area["scaleEvents"][0]["easeTypeY"], 6);
         assert_eq!(area["rotateEvents"][0]["easeType"], 7);

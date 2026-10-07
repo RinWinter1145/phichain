@@ -46,6 +46,15 @@ pub fn noise_areas_tab(
                                     t!("tab.noise_areas.is_subtract"),
                                     &mut area.is_subtract,
                                 );
+                                let mut visual_only = area.is_visual_only();
+                                if checkbox_row(
+                                    ui,
+                                    t!("tab.noise_areas.visual_only"),
+                                    &mut visual_only,
+                                ) {
+                                    area.set_visual_only(visual_only);
+                                    finished = true;
+                                }
                                 finished |= point_row(
                                     ui,
                                     t!("tab.noise_areas.top_right"),

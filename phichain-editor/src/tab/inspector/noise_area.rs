@@ -34,6 +34,16 @@ pub fn noise_area_inspector(
             |ui| ui.label(t!("tab.noise_areas.is_subtract")),
             |ui| finished |= ui.checkbox(&mut area.is_subtract, "").changed(),
         );
+        let mut visual_only = area.is_visual_only();
+        ui.sides(
+            |ui| ui.label(t!("tab.noise_areas.visual_only")),
+            |ui| {
+                if ui.checkbox(&mut visual_only, "").changed() {
+                    area.set_visual_only(visual_only);
+                    finished = true;
+                }
+            },
+        );
 
         let appear = area.appear_beat;
         let enable = area.enable_beat;

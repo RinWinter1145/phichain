@@ -42,6 +42,7 @@ tab:
     normal: 普通域
     subtract: 扣除域
     is_subtract: 扣除型噪域
+    visual_only: 視覺型（不斷觸）
     top_right: 右上角百分比
     bottom_left: 左下角百分比
     appear: 出現拍

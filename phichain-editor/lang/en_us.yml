@@ -42,6 +42,7 @@ tab:
     normal: Normal
     subtract: Subtract
     is_subtract: Subtract domain
+    visual_only: Visual-only (non-blocking)
     top_right: Top-right percentage
     bottom_left: Bottom-left percentage
     appear: Appear beat

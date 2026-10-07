@@ -51,6 +51,7 @@ struct NoiseCreationTool {
     active: bool,
     start: Option<egui::Pos2>,
     subtract: bool,
+    visual_only: bool,
 }
 
 #[derive(Resource)]
@@ -138,6 +139,21 @@ fn noise_creation_ui(ui: &mut Ui, world: &mut World, viewport: egui::Rect) {
         {
             world.resource_mut::<NoiseCreationTool>().subtract = !subtract;
         }
+
+        let visual_only_rect = egui::Rect::from_min_size(
+            egui::pos2(subtract_rect.right() + 4.0, button_rect.top()),
+            egui::vec2(96.0, 28.0),
+        );
+        let visual_only = world.resource::<NoiseCreationTool>().visual_only;
+        if ui
+            .put(
+                visual_only_rect,
+                egui::Button::new(t!("tab.noise_areas.visual_only")).selected(visual_only),
+            )
+            .clicked()
+        {
+            world.resource_mut::<NoiseCreationTool>().visual_only = !visual_only;
+        }
     }
 
     if !world.resource::<NoiseCreationTool>().active {
@@ -192,6 +208,7 @@ fn noise_creation_ui(ui: &mut Ui, world: &mut World, viewport: egui::Rect) {
                 area.enable_beat = current;
                 area.disable_beat = current + phichain_chart::beat!(4);
                 area.disappear_beat = area.disable_beat;
+                area.set_visual_only(world.resource::<NoiseCreationTool>().visual_only);
                 world.write_message(DoCommand(EditorCommand::CreateNoiseArea(
                     CreateNoiseArea::new(area),
                 )));
