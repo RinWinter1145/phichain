@@ -73,7 +73,7 @@ tab:
     title: Inspector
     noise_area:
       title: Noise domain
-      hint: Drag it in the preview; adjust all four phases on the timeline.
+      hint: Shift + left-drag to move; drag corners to resize and the light-blue handle to rotate; adjust all four phases on the timeline.
       presets: Composition presets
       full: Full screen
       left: Left half

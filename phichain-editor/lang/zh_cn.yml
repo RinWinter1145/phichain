@@ -73,7 +73,7 @@ tab:
     title: 检查器
     noise_area:
       title: 噪域
-      hint: 可在预览画面中直接拖动；时间轴可调整四段时序。
+      hint: Shift + 左键拖动可移动；拖动四角可缩放，浅蓝圆点可旋转；时间轴可调整四段时序。
       presets: 构图预设
       full: 全屏
       left: 左半屏

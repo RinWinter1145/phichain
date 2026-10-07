@@ -88,6 +88,7 @@ fn on_click_noise_area(
 
 fn on_drag_start_noise_area(
     event: On<Pointer<DragStart>>,
+    keys: Res<ButtonInput<KeyCode>>,
     areas: Query<(Entity, &NoiseArea, Option<&Selected>)>,
     viewport: Res<GameViewport>,
     bpm_list: Option<Res<BpmList>>,
@@ -95,7 +96,8 @@ fn on_drag_start_noise_area(
     mut drag: ResMut<NoiseDrag>,
     mut select: MessageWriter<Select>,
 ) {
-    if event.button != PointerButton::Primary {
+    let shift_pressed = keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight);
+    if event.button != PointerButton::Primary || !shift_pressed {
         return;
     }
     let Some(bpm_list) = bpm_list.as_deref() else {

@@ -195,6 +195,13 @@ fn noise_creation_ui(ui: &mut Ui, world: &mut World, viewport: egui::Rect) {
                 world.write_message(DoCommand(EditorCommand::CreateNoiseArea(
                     CreateNoiseArea::new(area),
                 )));
+                // Drawing is a one-shot action. Leaving the creation tool
+                // active suppresses all transform handles on the next frame,
+                // which made a freshly drawn domain appear impossible to
+                // rotate or resize.
+                let mut tool = world.resource_mut::<NoiseCreationTool>();
+                tool.active = false;
+                tool.start = None;
             }
         }
     }
@@ -230,6 +237,7 @@ fn noise_resize_ui(ui: &mut Ui, world: &mut World, viewport: egui::Rect) {
             viewport.top() + (0.5 - point.y / CANVAS_HEIGHT) * viewport.height(),
         )
     };
+    let shift_down = ui.input(|input| input.modifiers.shift);
 
     for (corner, sign) in corner_signs.into_iter().enumerate() {
         let position = if auto_key {
@@ -247,7 +255,11 @@ fn noise_resize_ui(ui: &mut Ui, world: &mut World, viewport: egui::Rect) {
         let response = ui.interact(
             rect,
             egui::Id::new(("noise-resize", entity, corner)),
-            egui::Sense::drag(),
+            if shift_down {
+                egui::Sense::hover()
+            } else {
+                egui::Sense::drag()
+            },
         );
         ui.painter()
             .circle_filled(position, 5.0, egui::Color32::GREEN);
@@ -380,17 +392,48 @@ fn noise_resize_ui(ui: &mut Ui, world: &mut World, viewport: egui::Rect) {
             + Vec2::new(0.0, visual.size.y / 2.0)
                 .rotate(Vec2::from_angle(visual.rotation_degrees.to_radians())),
     );
+    let bottom = world_to_screen(
+        visual.center
+            - Vec2::new(0.0, visual.size.y / 2.0)
+                .rotate(Vec2::from_angle(visual.rotation_degrees.to_radians())),
+    );
     let outward = (top - center).normalized();
-    let rotate_position = top + outward * 24.0;
+    let top_candidate = top + outward * 24.0;
+    let bottom_candidate = bottom - outward * 24.0;
+    let usable_viewport = viewport
+        .shrink2(egui::vec2(10.0, 10.0))
+        .with_min_y(viewport.top() + 42.0);
+    // Prefer the conventional handle above the domain. If the toolbar or a
+    // preview edge leaves no room there, flip it below instead of clamping it
+    // into the domain where it becomes indistinguishable from the content.
+    let (handle_edge, desired_rotate_position) = if usable_viewport.contains(top_candidate) {
+        (top, top_candidate)
+    } else {
+        (bottom, bottom_candidate)
+    };
+    let rotate_position = egui::pos2(
+        desired_rotate_position
+            .x
+            .clamp(usable_viewport.left(), usable_viewport.right()),
+        desired_rotate_position
+            .y
+            .clamp(usable_viewport.top(), usable_viewport.bottom()),
+    );
     ui.painter().line_segment(
-        [top, rotate_position],
+        [handle_edge, rotate_position],
         egui::Stroke::new(1.5_f32, egui::Color32::LIGHT_BLUE),
     );
-    let response = ui.interact(
-        egui::Rect::from_center_size(rotate_position, egui::vec2(16.0, 16.0)),
-        egui::Id::new(("noise-rotate", entity)),
-        egui::Sense::drag(),
-    );
+    let response = ui
+        .interact(
+            egui::Rect::from_center_size(rotate_position, egui::vec2(20.0, 20.0)),
+            egui::Id::new(("noise-rotate", entity)),
+            if shift_down {
+                egui::Sense::hover()
+            } else {
+                egui::Sense::drag()
+            },
+        )
+        .on_hover_text(t!("tab.inspector.noise_area.add_rotate"));
     ui.painter()
         .circle_filled(rotate_position, 6.0, egui::Color32::LIGHT_BLUE);
     if response.drag_started() {
